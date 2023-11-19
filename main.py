@@ -10,49 +10,74 @@ cnx = mysql.connector.connect(user='root', password='admin',
 cursor = cnx.cursor(buffered=True)
 
 # Define the API endpoint and parameters
-url = 'https://search.imdbot.workers.dev/?tt='
-imdb_ids = ['tt0111161', 'tt0068646', 'tt0468569', 'tt0208092', 'tt0050083',
-            'tt0108052', 'tt0167260', 'tt0110912', 'tt0060196', 'tt0137523',
-            'tt0120737', 'tt0109830', 'tt1375666', 'tt0167261', 'tt0080684',
-            'tt0133093', 'tt0099685', 'tt0073486', 'tt0047478', 'tt0114369',
-            'tt0317248', 'tt0114814', 'tt0102926', 'tt0038650', 'tt0110413',
-            'tt0120689', 'tt0816692', 'tt0246578', 'tt0120586', 'tt0054215',
-            'tt0021749', 'tt0027977', 'tt0076759', 'tt0120915', 'tt0034583',
-            'tt0064116', 'tt0032553', 'tt0078788', 'tt0082971', 'tt0047396',
-            'tt0986264', 'tt0209144', 'tt0078748', 'tt0033467', 'tt0043014',
-            'tt4154796', 'tt4633694', 'tt0090605', 'tt1187043', 'tt0435761',
-            'tt1194238', 'tt6644200']
+api_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjMzMjJiZjQwLWZiYjYtNGFjOS1iYzI1LTM3NWQ2MjU5NjVhOCIsImlhdCI6MTcwMDQyNTA4NCwic3ViIjoiZGV2ZWxvcGVyLzU5NmQ3MWE1LWEwOTItZmJjNy03Njc1LThiYjUxN2Q4MTZmMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS41OC4xMDAuMjE0Il0sInR5cGUiOiJjbGllbnQifV19.0L2oSwax4ewkqusycn30_xbcnBL4CiR5GAuB3gO6EbRWeWszoBUd1e-L5PRbpE-WbOZgLuOGLtmDAqnN3wM7vQ'
+api_url = 'https://api.clashroyale.com/v1/'
+clan_tags = ["LCUYQ0GP", "9CPV098R", "28RR9L0Y", "LUV2PUC2", "9GUCJRL0", "QR889RG0", "QVUJPU9Q", "QPY22Q0L", "QYU08YU9", "QYRY02LQ", "Q82P2JCJ", "8L9Y9UP0", "890C9RJV", "8902RQR", "82V9V", "GP9GRQ", "8LUR0C0Y", "8CRR000P", "QC9Y9V", "Q2YU2RCG", "80G9JYP", "GGU8QY", "LLCCRCL0", "8G2YPC", "QLJ9CJUL", "9J2U8GU", "Q0R08YLJ", "P88PGYP", "QYGL80RR", "LJCVV8P0", "2GR2GQRC", "PJ9PGCC9", "9VVPR2R8", "QUR0GLQC", "CP22UC", "G8YL9CLU", "Q8CRCR2P", "PQYR0C2C", "8Y08VVC", "Q82QU2L9", "QCG29C9C", "Q2CU82VC", "LJGG89QY", "GL008G8P", "L28V902R", "PQUC20", "8GQGUJ", "Q28QQG08", "G00G2R29", "889YVPYR", "9JJRCUUY", "YQPGYRLV", "LJP9VPJR", "GU8G9QQQ", "90UUC92Y", "U92J2C", "YLYJ8", "QY9V0QJ0", "8UJ2UUJ8", "LGQCCJU9", "89JQ02Q9", "P90C9YUJ", "9JCLGG9G", "PUVY2PUY", "QPGUGJQY", "QYRY02LQ"]
+headers={'Authorization': f'Bearer {api_token}'}
+# Loop through the clan tags
+for clan_tag in clan_tags:
+    clan_url = api_url + "clans/%23" + clan_tag
+    clan_response = requests.get(clan_url, headers)
+    clan_data = json.loads(clan_response.text)
 
-# Loop through the IMDb IDs and retrieve the data
-for imdb_id in imdb_ids:
-    response = requests.get(url + imdb_id)
-    data = json.loads(response.text)
+    # Extract the relevant data from the JSON response for the clan
+    name = clan_data['name'] # VARCHAR
+    type = clan_data['type'] # ENUM {open, closed, invite only}?
+    description = clan_data['description'] # text
+    badge_id = clan_data['badgeId'] #int, might remove if the badges are not found in the api
+    clan_score = clan_data['clanScore'] # int
+    clan_war_trophies = clan_data['clanWarTrophies'] #int
+    location = clan_data['location'] # holds id, name, isCountry, and countrycode, maybe do a location table?
+    required_trophies = clan_data['requiredTrophies'] # int, can make a query to check all players that are eligible to join, with the minimum of their trophies being this number
+    donations_per_week = clan_data['donationsPerWeek']
 
-    # Extract the relevant data from the JSON response
-    title = data['short']['name']
-    print(title + ' ' + imdb_id)
+    members = clan_data['memberList'] # holds players and their respective data relating to the clan (tag, name, role, lastSeen, expLevel, arena{id, name}, donations, donationsReceived)
+    # Insert the clan data into the clan table
+    add_clan = ("INSERT IGNORE INTO clan "
+                "(clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location_id, required_trophies, donations_per_week) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+    data_clan = (
+    clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location['id'], required_trophies,
+    donations_per_week)
+    cursor.execute(add_clan, data_clan)
+    #Extract the data for the members
+    for member in members:
+        player_tag = member['tag']
 
-    release_year = data['top']['releaseYear']['year']
-    rating = data['short']['aggregateRating']['ratingValue']
-    description = data['short']['description']
-    runtime = data['short']['duration']
-    content_rating = data['short']['contentRating']
-    directors = data['short']['director']
-    actors = data['main']['cast']['edges']
-    creators = data['short']['creator']
-    number_of_reviews = data['short']['aggregateRating']['ratingCount']
-    genres = data['short']['genre']
-    akas = data['main']['akas']['edges']
-    keywords = data['short']['keywords'].split(',')
-    languages = data['main']['spokenLanguages']['spokenLanguages']
-    countries = data['top']['countriesOfOrigin']['countries']
+        player_url = api_url + "players/%23" + player_tag[1:]
+        player_response = requests.get(player_url, headers)
+        player_data = json.loads(player_response.text)
 
-    # Insert the data into the database
-    add_movie = ("INSERT IGNORE INTO movie "
-                 "(imdb_id, title, description, rating, runtime, release_year, number_of_reviews) "
-                 "VALUES (%s, %s, %s, %s, %s, %s, %s)")
-    data_movie = (imdb_id, title, description, rating, runtime, release_year, number_of_reviews)
-    cursor.execute(add_movie, data_movie)
+        name = player_data['name'] #VARCHAR
+        exp_level = player_data['expLevel'] #int
+        total_exp_points = player_data['totalExpPoints']#int
+        trophies = player_data['trophies'] #int
+        best_trophies = player_data['bestTrophies'] #int
+        wins = player_data['wins'] #int
+        losses = player_data['losses']#int
+        battle_count = player_data['battleCount']#int
+        three_crown_wins = player_data['threeCrownsWins']#int
+        challenge_cards_won = player_data['challengeCardsWon']#int
+        challenge_max_wins = player_data['challengeMaxWins']#int
+        tournament_cards_won = player_data['tournamentCardsWon']#int
+        tournament_battle_count = player_data['tournamentBattleCount']#int
+        donations = player_data['donations']#int
+        donations_received = player_data['donationsReceived']#int
+        total_donations = player_data['totalDonations']#int
+        war_day_wins = player_data['warDayWins']#int
+        clan_cards_collected = player_data['clanCardsCollected']#int
+        cards = player_data['cards']#holds level and starLevel of each card
+        deck = player_data['currentDeck']#holds card entities
+        current_favorite_card = player_data['currentFavoriteCard']#holds favorite card (name, id, maxLevel, maxEvolutionLevel, elixirCost), we could only keep the id of the card with the player, and add FK to cards table
+
+
+
+
+
+
+# IGNORE EVERYTHING UNDER THIS LINE
+
+
 
     # Adding actors into person and actor
     for actor in actors:
@@ -77,7 +102,7 @@ for imdb_id in imdb_ids:
                          "(imdb_id, person_id, character_name) "
                          "VALUES (%s, %s, %s)")
 
-            data_actor = (imdb_id, person_id, character['name'])
+            data_actor = (clan_tag, person_id, character['name'])
 
             cursor.execute(add_actor, data_actor)
 
@@ -104,7 +129,7 @@ for imdb_id in imdb_ids:
             add_creator = ("INSERT IGNORE INTO creator"
                            "(person_id, imdb_id)"
                            "VALUES (%s, %s)")
-            data_creator = (person_id, imdb_id)
+            data_creator = (person_id, clan_tag)
             cursor.execute(add_creator, data_creator)
 
     # Adding directors into director and person
@@ -130,7 +155,7 @@ for imdb_id in imdb_ids:
             add_director = ("INSERT IGNORE INTO director"
                             "(person_id, imdb_id)"
                             "VALUES (%s, %s)")
-            data_director = (person_id, imdb_id)
+            data_director = (person_id, clan_tag)
             cursor.execute(add_director, data_director)
 
     # Adding content rating to content_rating
@@ -154,7 +179,7 @@ for imdb_id in imdb_ids:
     add_movie_content_rating = ("INSERT INTO movie_content_rating"
                                 "(imdb_id, content_rating_id)"
                                 "VALUES (%s, %s)")
-    data_movie_content_rating = (imdb_id, content_rating_id)
+    data_movie_content_rating = (clan_tag, content_rating_id)
     cursor.execute(add_movie_content_rating, data_movie_content_rating)
 
     # Adding genre to genre db and relating to movie
@@ -178,7 +203,7 @@ for imdb_id in imdb_ids:
         add_movie_genre = ("INSERT INTO movie_genre"
                            "(imdb_id, genre_id)"
                            "VALUES (%s, %s)")
-        data_movie_genre = (imdb_id, genre_id)
+        data_movie_genre = (clan_tag, genre_id)
         cursor.execute(add_movie_genre, data_movie_genre)
 
     # Relating akas to movie
@@ -188,7 +213,7 @@ for imdb_id in imdb_ids:
             add_aka = ("INSERT INTO movie_aka"
                        "(imdb_id, aka_id, text)"
                        "VALUES (%s, %s, %s)")
-            data_aka = (imdb_id, akaCounter, aka['node']['text'])
+            data_aka = (clan_tag, akaCounter, aka['node']['text'])
             cursor.execute(add_aka, data_aka)
             akaCounter += 1
 
@@ -212,7 +237,7 @@ for imdb_id in imdb_ids:
         add_movie_keyword = ("INSERT INTO movie_keyword"
                              "(imdb_id, keyword_id)"
                              "VALUES (%s, %s)")
-        data_movie_keyword = (imdb_id, keyword_id)
+        data_movie_keyword = (clan_tag, keyword_id)
         cursor.execute(add_movie_keyword, data_movie_keyword)
 
     # Adding language to language db and relating to movie
@@ -235,7 +260,7 @@ for imdb_id in imdb_ids:
         add_movie_language = ("INSERT INTO movie_language"
                               "(imdb_id, language_id)"
                               "VALUES (%s, %s)")
-        data_movie_language = (imdb_id, language_id)
+        data_movie_language = (clan_tag, language_id)
         cursor.execute(add_movie_language, data_movie_language)
 
     # Relating country to movie
@@ -243,7 +268,7 @@ for imdb_id in imdb_ids:
         add_country = ("INSERT IGNORE INTO movie_country"
                        "(imdb_id, country_iso_code)"
                        "VALUES (%s, %s)")
-        data_country = (imdb_id, country['id'])
+        data_country = (clan_tag, country['id'])
         cursor.execute(add_country, data_country)
 
 # Commit the changes and close the connection
