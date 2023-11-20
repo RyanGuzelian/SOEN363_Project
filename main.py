@@ -66,7 +66,7 @@ for clan_tag in clan_tags:
                 "(clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location_id, required_trophies, donations_per_week) "
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
     data_clan = (
-    clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location['id'], required_trophies,
+    "#"+clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location['id'], required_trophies,
     donations_per_week)
     cursor.execute(add_clan, data_clan)
 
@@ -81,11 +81,10 @@ for clan_tag in clan_tags:
                 add_war = ("INSERT IGNORE INTO war"
                            "(clan_tag, war_id, standing)"
                            "VALUES (%s, %s, %s)")
-                data_war = (clan_tag, i, standing['rank'])
+                data_war = ("#"+clan_tag, i, standing['rank'])
                 break
-    
-    
 
+        
 
 
     #Extract the data for the members
@@ -131,7 +130,7 @@ for clan_tag in clan_tags:
         add_clan_member = ("INSERT IGNORE INTO clan_member "
                            "(clan_tag, player_tag, role, last_seen, donations, donations_received)"
                            "VALUES(%s, %s, %s, %s, %s, %s)")
-        data_clan_member = (clan_tag, player_tag, role, last_seen, donations, donations_received)
+        data_clan_member = ("#"+clan_tag, player_tag, role, last_seen, donations, donations_received)
         cursor.execute(add_clan_member, data_clan_member)
 
         #Adding player cards to player_card
