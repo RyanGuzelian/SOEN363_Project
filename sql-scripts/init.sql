@@ -12,8 +12,13 @@ CREATE TABLE badge (
 -- Card table
 CREATE TABLE card (
     card_id INT,
+    card_key VARCHAR(50),
     name VARCHAR(255),
-    elixir_count INT,
+    elixir INT,
+    type VARCHAR(50),
+    rarity VARCHAR(50),
+    arena INT,
+    description VARCHAR(2000),
     PRIMARY KEY (card_id)
 );
 
