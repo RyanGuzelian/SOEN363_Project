@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS clash_of_clans;
+CREATE DATABASE IF NOT EXISTS db;
 
-USE clash_of_clans;
+USE db;
 
 -- Badge table
 CREATE TABLE badge (
