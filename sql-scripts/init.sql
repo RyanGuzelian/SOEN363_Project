@@ -4,7 +4,7 @@ USE clash_of_clans;
 
 -- Badge table
 CREATE TABLE badge (
-    badge_id INT,
+    badge_id INT AUTO_INCREMENT,
     badge_name VARCHAR(255),
     PRIMARY KEY (badge_id)
 );
@@ -56,12 +56,29 @@ CREATE TABLE clan (
 );
 
 -- War table
-CREATE TABLE War (
+CREATE TABLE war (
     clan_tag VARCHAR(15) CHECK (clan_tag LIKE '#%'),
     war_id INT,
     standing VARCHAR(255), -- not sure
     PRIMARY KEY (clan_tag, war_id),
     FOREIGN KEY (clan_tag) REFERENCES clan(clan_tag)
+);
+
+-- Achievement table
+CREATE TABLE achievement (
+    achievement_id INT AUTO_INCREMENT,
+    name VARCHAR(255),
+    information VARCHAR(255),
+    PRIMARY KEY (achievement_id)
+);
+
+-- Player Achievement table
+CREATE TABLE player_achievement (
+    player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
+    achievement_id INT AUTO_INCREMENT,
+    PRIMARY KEY (player_tag, achievement_id),
+    FOREIGN KEY (player_tag) REFERENCES player(player_tag),
+    FOREIGN KEY (achievement_id) REFERENCES achievement(achievement_id)
 );
 
 -- Clan Member table
@@ -83,7 +100,7 @@ CREATE TABLE player_card (
     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
     card_id INT,
     level INT,
-    starLevel INT,
+    star_level INT,
     PRIMARY KEY (player_tag, card_id),
     FOREIGN KEY (player_tag) REFERENCES player(player_tag),
     FOREIGN KEY (card_id) REFERENCES card(card_id)
@@ -92,9 +109,9 @@ CREATE TABLE player_card (
 -- Player Badge table
 CREATE TABLE player_badge (
     player_tag VARCHAR(255),
-    badge_id INT,
+    badge_id INT AUTO_INCREMENT,
     level INT,
-    maxLevel INT,
+    max_level INT,
     progress INT, -- represents the progress made towards a specific badge level
     target INT, -- represents the target value required to achieve a specific badge level
     PRIMARY KEY (player_tag, badge_id),
