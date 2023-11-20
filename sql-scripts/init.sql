@@ -68,9 +68,9 @@ CREATE TABLE War (
 CREATE TABLE clan_member (
     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
     clan_tag VARCHAR(15) CHECK (clan_tag LIKE '#%'),
-    role ENUM('member', 'elder', 'leader'),
+    role ENUM('member', 'elder', 'leader', 'coLeader'),
     last_seen DATETIME,
-    donations INT, --represents the number of donations made
+    donations INT, -- represents the number of donations made
     donations_received INT,
     PRIMARY KEY (player_tag, clan_tag),
     FOREIGN KEY (player_tag) REFERENCES player(player_tag),
@@ -113,8 +113,8 @@ CREATE TABLE deck (
     card6 INT,
     card7 INT,
     card8 INT,
-    PRIMARY KEY (player_id),
-    FOREIGN KEY (player_id) REFERENCES player(player_tag),
+    PRIMARY KEY (player_tag),
+    FOREIGN KEY (player_tag) REFERENCES player(player_tag),
     FOREIGN KEY (card1) REFERENCES card(card_id),
     FOREIGN KEY (card2) REFERENCES card(card_id),
     FOREIGN KEY (card3) REFERENCES card(card_id),
