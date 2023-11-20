@@ -214,13 +214,13 @@ for clan_tag in clan_tags:
             achievement_target = achievement['target']
 
             add_achievement = ("INSERT IGNORE INTO achievement"
-                               "(name, info)"
+                               "(achievement_name, info)"
                                "VALUES (%s, %s)")
             data_achievement = (achievement_name, achievement_info)
             cursor.execute(add_achievement, data_achievement)
 
             # Retrieve the badge_id (whether inserted or already exists)
-            get_achievement_id = "SELECT achievement_id FROM achievement WHERE name = %s"
+            get_achievement_id = "SELECT achievement_id FROM achievement WHERE achievement_name = %s"
             data_achievement_name = (achievement_name)
             cursor.execute(get_achievement_id, (data_achievement_name,))
             result = cursor.fetchone()

@@ -72,8 +72,8 @@ CREATE TABLE war (
 -- Achievement table
 CREATE TABLE achievement (
     achievement_id INT AUTO_INCREMENT,
-    name VARCHAR(255),
-    information VARCHAR(255),
+    achievement_name VARCHAR(255),
+    info TEXT(65535),
     PRIMARY KEY (achievement_id)
 );
 
@@ -81,6 +81,9 @@ CREATE TABLE achievement (
 CREATE TABLE player_achievement (
     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
     achievement_id INT AUTO_INCREMENT,
+    stars INT,
+    value INT,
+    target INT,
     PRIMARY KEY (player_tag, achievement_id),
     FOREIGN KEY (player_tag) REFERENCES player(player_tag),
     FOREIGN KEY (achievement_id) REFERENCES achievement(achievement_id)
@@ -147,22 +150,22 @@ CREATE TABLE deck (
     FOREIGN KEY (card8) REFERENCES card(card_id)
 );
 
--- Achievement table
-CREATE TABLE achievement (
-    achievement_id INT,
-    name VARCHAR(255),
-    info TEXT(65535),
-    PRIMARY KEY (achievement_id)
-);
+-- -- Achievement table
+-- CREATE TABLE achievement (
+--     achievement_id INT,
+--     name VARCHAR(255),
+--     info TEXT(65535),
+--     PRIMARY KEY (achievement_id)
+-- );
 
--- Player Achievement table
-CREATE TABLE player_achievement (
-    player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
-    achievement_id INT,
-    stars INT,
-    value INT,
-    target INT,
-    PRIMARY KEY (player_tag, achievement_id),
-    FOREIGN KEY (player_tag) REFERENCES player(player_tag),
-    FOREIGN KEY (achievement_id) REFERENCES achievement(achievement_id)
-);
+-- -- Player Achievement table
+-- CREATE TABLE player_achievement (
+--     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
+--     achievement_id INT,
+--     stars INT,
+--     value INT,
+--     target INT,
+--     PRIMARY KEY (player_tag, achievement_id),
+--     FOREIGN KEY (player_tag) REFERENCES player(player_tag),
+--     FOREIGN KEY (achievement_id) REFERENCES achievement(achievement_id)
+-- );
