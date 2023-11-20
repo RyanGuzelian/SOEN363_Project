@@ -9,17 +9,46 @@ cnx = mysql.connector.connect(user='root', password='admin',
                               host='localhost', port=3307, database='db')
 cursor = cnx.cursor(buffered=True)
 
+
+api2_url = 'https://royaleapi.github.io/cr-api-data/json/cards.json'
+
+response = requests.get(api2_url)
+data = json.loads(response.text)
+
+for card in data:
+    card_id = card['id']
+    key = card['key']
+    name = card['name']
+    elixir = card['elixir']
+    card_type = card['type']
+    rarity = card['rarity']
+    arena = card['arena']
+    description = card['description']
+
+    add_card = ("INSERT IGNORE INTO card"
+                "(card_id, card_key, name, elixir, type, rarity, arena, description)"
+                "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)")
+    data_card = (card_id, key, name, elixir, card_type, rarity, arena, description)
+
+    cursor.execute(add_card, data_card)
+
+
 # Define the API endpoint and parameters
 api_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjMzMjJiZjQwLWZiYjYtNGFjOS1iYzI1LTM3NWQ2MjU5NjVhOCIsImlhdCI6MTcwMDQyNTA4NCwic3ViIjoiZGV2ZWxvcGVyLzU5NmQ3MWE1LWEwOTItZmJjNy03Njc1LThiYjUxN2Q4MTZmMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS41OC4xMDAuMjE0Il0sInR5cGUiOiJjbGllbnQifV19.0L2oSwax4ewkqusycn30_xbcnBL4CiR5GAuB3gO6EbRWeWszoBUd1e-L5PRbpE-WbOZgLuOGLtmDAqnN3wM7vQ'
 api_url = 'https://api.clashroyale.com/v1/'
 clan_tags = ["LCUYQ0GP", "9CPV098R", "28RR9L0Y", "LUV2PUC2", "9GUCJRL0", "QR889RG0", "QVUJPU9Q", "QPY22Q0L", "QYU08YU9", "QYRY02LQ", "Q82P2JCJ", "8L9Y9UP0", "890C9RJV", "8902RQR", "82V9V", "GP9GRQ", "8LUR0C0Y", "8CRR000P", "QC9Y9V", "Q2YU2RCG", "80G9JYP", "GGU8QY", "LLCCRCL0", "8G2YPC", "QLJ9CJUL", "9J2U8GU", "Q0R08YLJ", "P88PGYP", "QYGL80RR", "LJCVV8P0", "2GR2GQRC", "PJ9PGCC9", "9VVPR2R8", "QUR0GLQC", "CP22UC", "G8YL9CLU", "Q8CRCR2P", "PQYR0C2C", "8Y08VVC", "Q82QU2L9", "QCG29C9C", "Q2CU82VC", "LJGG89QY", "GL008G8P", "L28V902R", "PQUC20", "8GQGUJ", "Q28QQG08", "G00G2R29", "889YVPYR", "9JJRCUUY", "YQPGYRLV", "LJP9VPJR", "GU8G9QQQ", "90UUC92Y", "U92J2C", "YLYJ8", "QY9V0QJ0", "8UJ2UUJ8", "LGQCCJU9", "89JQ02Q9", "P90C9YUJ", "9JCLGG9G", "PUVY2PUY", "QPGUGJQY", "QYRY02LQ"]
 headers={'Authorization': f'Bearer {api_token}'}
+
+
 # Loop through the clan tags
 for clan_tag in clan_tags:
     clan_url = api_url + "clans/%23" + clan_tag
     clan_response = requests.get(clan_url, headers)
     clan_data = json.loads(clan_response.text)
 
+    war_url = clan_url + "/riverracelog?limit=3"
+    war_response = requests.get(war_url, headers)
+    war_data = json.loads(war_response.text)
     # Extract the relevant data from the JSON response for the clan
     name = clan_data['name'] # VARCHAR
     type = clan_data['type'] # ENUM {open, closed, invite only}?
@@ -37,9 +66,27 @@ for clan_tag in clan_tags:
                 "(clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location_id, required_trophies, donations_per_week) "
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
     data_clan = (
-    clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location['id'], required_trophies,
+    "#"+clan_tag, name, type, description, badge_id, clan_score, clan_war_trophies, location['id'], required_trophies,
     donations_per_week)
     cursor.execute(add_clan, data_clan)
+
+    #add war data to war table
+    i = 0
+    wars = war_data['items']
+    for war in wars:
+        i += 1
+        standings = war['standings']
+        for standing in standings:
+            if standing['clan']['tag'][1:] == clan_tag:
+                add_war = ("INSERT IGNORE INTO war"
+                           "(clan_tag, war_id, standing)"
+                           "VALUES (%s, %s, %s)")
+                data_war = ("#"+clan_tag, i, standing['rank'])
+                break
+
+        
+
+
     #Extract the data for the members
     for member in members:
         player_tag = member['tag']
@@ -50,6 +97,8 @@ for clan_tag in clan_tags:
 
         name = player_data['name'] #VARCHAR
         exp_level = player_data['expLevel'] #int
+        last_seen = member['lastSeen']
+        role = player_data['role']
         total_exp_points = player_data['totalExpPoints']#int
         trophies = player_data['trophies'] #int
         best_trophies = player_data['bestTrophies'] #int
@@ -63,213 +112,112 @@ for clan_tag in clan_tags:
         tournament_battle_count = player_data['tournamentBattleCount']#int
         donations = player_data['donations']#int
         donations_received = player_data['donationsReceived']#int
-        total_donations = player_data['totalDonations']#int
-        war_day_wins = player_data['warDayWins']#int
-        clan_cards_collected = player_data['clanCardsCollected']#int
         cards = player_data['cards']#holds level and starLevel of each card
         deck = player_data['currentDeck']#holds card entities
-        current_favorite_card = player_data['currentFavoriteCard']#holds favorite card (name, id, maxLevel, maxEvolutionLevel, elixirCost), we could only keep the id of the card with the player, and add FK to cards table
+        current_favorite_card = player_data['currentFavoriteCard']['id']#int
+        arena = player_data['arena']
+        badges = player_data['badges']
+        achievements = player_data['achievements']
+        star_points = player_data['starPoints']
+        exp_points = player_data['expPoints']
+
+        add_player = ("INSERT IGNORE INTO player"
+                      "(player_tag, name, exp_level, total_exp_points, trophies, best_trophies, wins, losses, battle_count, three_crown_wins, challenge_cards_won, challenge_max_wins, tournament_cards_won, tournament_battle_count, current_favorite_card_id)"
+                      "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        data_player = (player_tag, name, exp_level, total_exp_points, trophies, best_trophies, wins, losses, battle_count, three_crown_wins, challenge_cards_won, challenge_max_wins, tournament_cards_won, tournament_battle_count, current_favorite_card)
+        cursor.execute(add_player, data_player)
+
+        add_clan_member = ("INSERT IGNORE INTO clan_member "
+                           "(clan_tag, player_tag, role, last_seen, donations, donations_received)"
+                           "VALUES(%s, %s, %s, %s, %s, %s)")
+        data_clan_member = ("#"+clan_tag, player_tag, role, last_seen, donations, donations_received)
+        cursor.execute(add_clan_member, data_clan_member)
+
+        #Adding player cards to player_card
+        for card in cards:
+            card_id = card['id']#int pour tout le reste dans cartes
+            card_level = card['level']
+            card_star_level = card['starLevel']# can be null
+            
+            add_player_card = ("INSERT IGNORE INTO player_card"
+                               "(player_tag, card_id, level, star_level)"
+                               "VALUES (%s, %s, %s, %s)")
+            data_player_card = (player_tag, card_id, card_level, card_star_level)
+
+            cursor.execute(add_player_card, data_player_card)
+
+        #adding deck to player_deck
+        deck_card_ids = []
+        for card in deck:
+            deck_card_ids.append(card['id'])
+        add_player_deck = ("INSERT IGNORE INTO player_deck"
+                           "(player_tag, card1, card2, card3, card4, card5, card6, card7, card8)"
+                           "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        data_player_card = (player_tag, deck_card_ids[0], deck_card_ids[1], deck_card_ids[2], deck_card_ids[3], deck_card_ids[4], deck_card_ids[5], deck_card_ids[6], deck_card_ids[7])
+        
+        #adding badges to badge and player_badge
+        for badge in badges:
+            badge_name = badge['name']
+            badge_level = badge['level']
+            badge_max_level = badge['maxLevel']
+            badge_progress = badge['progress']
+            badge_target = badge['target']
 
 
+            add_badge = ("INSERT IGNORE INTO badge"
+                         "(badge_name)"
+                         "VALUES(%s)")
+            data_badge = (badge_name)
+            cursor.execute(add_badge, (data_badge,))
 
-
-
-
-# IGNORE EVERYTHING UNDER THIS LINE
-
-
-
-    # Adding actors into person and actor
-    for actor in actors:
-        add_person = ("INSERT IGNORE INTO person "
-                      "(name) "
-                      "VALUES (%s)")
-        data_person = (actor['node']['name']['nameText']['text'])
-        cursor.execute(add_person, (data_person,))
-
-        # Retrieve the person_id (whether inserted or already exists)
-        get_person_id = "SELECT person_id FROM person WHERE name = %s"
-        cursor.execute(get_person_id, (data_person,))
-        result = cursor.fetchone()
-        if result:
-            person_id = result[0]
-        else:
-            # Person was just inserted, get the last inserted ID
-            cursor.execute("SELECT LAST_INSERT_ID()")
-            person_id = cursor.fetchone()[0]
-        for character in actor['node']['characters']:
-            add_actor = ("INSERT IGNORE INTO actor "
-                         "(imdb_id, person_id, character_name) "
-                         "VALUES (%s, %s, %s)")
-
-            data_actor = (clan_tag, person_id, character['name'])
-
-            cursor.execute(add_actor, data_actor)
-
-    # Adding creators into creator and person
-    for creator in creators:
-        if creator['@type'] == 'Person':
-            add_person = ("INSERT IGNORE INTO person "
-                          "(name) "
-                          "VALUES (%s)")
-            data_person = (creator['name'])
-            cursor.execute(add_person, (data_person,))
-
-            # Retrieve the person_id (whether inserted or already exists)
-            get_person_id = "SELECT person_id FROM person WHERE name = %s"
-            cursor.execute(get_person_id, (data_person,))
+            # Retrieve the badge_id (whether inserted or already exists)
+            get_badge_id = "SELECT badge_id FROM badge WHERE badge_name = %s"
+            cursor.execute(get_badge_id, (data_badge,))
             result = cursor.fetchone()
             if result:
-                person_id = result[0]
+                badge_id = result[0]
             else:
                 # Person was just inserted, get the last inserted ID
                 cursor.execute("SELECT LAST_INSERT_ID()")
-                person_id = cursor.fetchone()[0]
+                badge_id = cursor.fetchone()[0]
 
-            add_creator = ("INSERT IGNORE INTO creator"
-                           "(person_id, imdb_id)"
-                           "VALUES (%s, %s)")
-            data_creator = (person_id, clan_tag)
-            cursor.execute(add_creator, data_creator)
 
-    # Adding directors into director and person
-    for director in directors:
-        if director['@type'] == 'Person':
-            add_person = ("INSERT IGNORE INTO person "
-                          "(name) "
-                          "VALUES (%s)")
-            data_person = (director['name'])
-            cursor.execute(add_person, (data_person,))
+            add_player_badge = ("INSERT IGNORE INTO player_badge"
+                                "(player_tag, badge_id, level, max_level, progress, target)"
+                                "VALUES(%s, %s, %s, %s, %s, %s)")
+            data_player_badge = (player_tag,  badge_id, badge_level, badge_max_level, badge_progress, badge_target)
 
-            # Retrieve the person_id (whether inserted or already exists)
-            get_person_id = "SELECT person_id FROM person WHERE name = %s"
-            cursor.execute(get_person_id, (data_person,))
+
+        for achievement in achievements: 
+            achievement_name = achievement['name']
+            achievement_info = achievement['info']
+            achievement_stars = achievement['stars']
+            achievement_value = achievement['value']
+            achievement_target = achievement['target']
+
+            add_achievement = ("INSERT IGNORE INTO achievement"
+                               "name, info"
+                               "VALUES (%s, %s)")
+            data_achievement = (achievement_name, achievement_info)
+            cursor.execute(add_achievement, data_achievement)
+
+            # Retrieve the badge_id (whether inserted or already exists)
+            get_achievement_id = "SELECT achievement_id FROM achievement WHERE name = %s"
+            data_achievement_name = (achievement_name)
+            cursor.execute(get_achievement_id, (data_achievement_name,))
             result = cursor.fetchone()
             if result:
-                person_id = result[0]
+                achievement_id = result[0]
             else:
                 # Person was just inserted, get the last inserted ID
                 cursor.execute("SELECT LAST_INSERT_ID()")
-                person_id = cursor.fetchone()[0]
+                achievement_id = cursor.fetchone()[0]
 
-            add_director = ("INSERT IGNORE INTO director"
-                            "(person_id, imdb_id)"
-                            "VALUES (%s, %s)")
-            data_director = (person_id, clan_tag)
-            cursor.execute(add_director, data_director)
-
-    # Adding content rating to content_rating
-    add_content_rating = ("INSERT IGNORE INTO content_rating"
-                          "(content_rating_name)"
-                          "VALUES (%s)")
-    data_content_rating = (content_rating)
-    cursor.execute(add_content_rating, (data_content_rating,))
-
-    # Adding relation of movie id and content rating id
-    get_content_rating_id = "SELECT content_rating_id FROM content_rating WHERE content_rating_name = %s"
-    cursor.execute(get_content_rating_id, (data_content_rating,))
-    result = cursor.fetchone()
-    if result:
-        content_rating_id = result[0]
-    else:
-        # Person was just inserted, get the last inserted ID
-        cursor.execute("SELECT LAST_INSERT_ID()")
-        content_rating_id = cursor.fetchone()[0]
-
-    add_movie_content_rating = ("INSERT INTO movie_content_rating"
-                                "(imdb_id, content_rating_id)"
-                                "VALUES (%s, %s)")
-    data_movie_content_rating = (clan_tag, content_rating_id)
-    cursor.execute(add_movie_content_rating, data_movie_content_rating)
-
-    # Adding genre to genre db and relating to movie
-    for genre in genres:
-        add_genre = ("INSERT IGNORE INTO genre"
-                     "(genre)"
-                     "VALUES (%s)")
-        data_genre = (genre)
-        cursor.execute(add_genre, (data_genre,))
-
-        get_genre_id = "SELECT genre_id FROM genre WHERE genre = %s"
-        cursor.execute(get_genre_id, (data_genre,))
-        result = cursor.fetchone()
-        if result:
-            genre_id = result[0]
-        else:
-            # Person was just inserted, get the last inserted ID
-            cursor.execute("SELECT LAST_INSERT_ID()")
-            genre_id = cursor.fetchone()[0]
-
-        add_movie_genre = ("INSERT INTO movie_genre"
-                           "(imdb_id, genre_id)"
-                           "VALUES (%s, %s)")
-        data_movie_genre = (clan_tag, genre_id)
-        cursor.execute(add_movie_genre, data_movie_genre)
-
-    # Relating akas to movie
-    akaCounter = 1
-    for aka in akas:
-        if aka['node']['__typename'] == 'Aka':
-            add_aka = ("INSERT INTO movie_aka"
-                       "(imdb_id, aka_id, text)"
-                       "VALUES (%s, %s, %s)")
-            data_aka = (clan_tag, akaCounter, aka['node']['text'])
-            cursor.execute(add_aka, data_aka)
-            akaCounter += 1
-
-    # Adding keywords to keyword db and relating to movie
-    for keyword in keywords:
-        add_keyword = ("INSERT IGNORE INTO keyword"
-                       "(keyword_text)"
-                       "VALUES (%s)")
-        data_keyword = (keyword)
-        cursor.execute(add_keyword, (data_keyword,))
-
-        get_keyword_id = "SELECT keyword_id FROM keyword WHERE keyword_text = %s"
-        cursor.execute(get_keyword_id, (data_keyword,))
-        result = cursor.fetchone()
-        if result:
-            keyword_id = result[0]
-        else:
-            cursor.execute("SELECT LAST_INSERT_ID()")
-            keyword_id = cursor.fetchone()[0]
-
-        add_movie_keyword = ("INSERT INTO movie_keyword"
-                             "(imdb_id, keyword_id)"
-                             "VALUES (%s, %s)")
-        data_movie_keyword = (clan_tag, keyword_id)
-        cursor.execute(add_movie_keyword, data_movie_keyword)
-
-    # Adding language to language db and relating to movie
-    for language in languages:
-        add_language = ("INSERT IGNORE INTO language"
-                        "(language_text)"
-                        "VALUES (%s)")
-        data_language = (language['text'])
-        cursor.execute(add_language, (data_language,))
-
-        get_language_id = "SELECT language_id FROM language WHERE language_text = %s"
-        cursor.execute(get_language_id, (data_language,))
-        result = cursor.fetchone()
-        if result:
-            language_id = result[0]
-        else:
-            cursor.execute("SELECT LAST_INSERT_ID()")
-            language_id = cursor.fetchone()[0]
-
-        add_movie_language = ("INSERT INTO movie_language"
-                              "(imdb_id, language_id)"
-                              "VALUES (%s, %s)")
-        data_movie_language = (clan_tag, language_id)
-        cursor.execute(add_movie_language, data_movie_language)
-
-    # Relating country to movie
-    for country in countries:
-        add_country = ("INSERT IGNORE INTO movie_country"
-                       "(imdb_id, country_iso_code)"
-                       "VALUES (%s, %s)")
-        data_country = (clan_tag, country['id'])
-        cursor.execute(add_country, data_country)
+            add_player_achievement = ("INSERT IGNORE INTO player_achievement"
+                                      "(player_tag, achievement_id, stars, value, target)"
+                                      "VALUES(%s, %s, %s, %s, %s)")
+            data_player_achievement = (player_tag, achievement_id, achievement_stars, achievement_value, achievement_target)
+            cursor.execute(add_player_achievement, data_player_achievement)
 
 # Commit the changes and close the connection
 cnx.commit()
