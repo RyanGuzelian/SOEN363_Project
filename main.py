@@ -90,6 +90,7 @@ for clan_tag in clan_tags:
     #Extract the data for the members
     for member in members:
         player_tag = member['tag']
+        print(clan_tag +', '+player_tag)
 
         player_url = api_url + "players/%23" + player_tag[1:]
         player_response = requests.get(player_url, headers)
@@ -105,7 +106,7 @@ for clan_tag in clan_tags:
         wins = player_data['wins'] #int
         losses = player_data['losses']#int
         battle_count = player_data['battleCount']#int
-        three_crown_wins = player_data['threeCrownsWins']#int
+        three_crown_wins = player_data['threeCrownWins']#int
         challenge_cards_won = player_data['challengeCardsWon']#int
         challenge_max_wins = player_data['challengeMaxWins']#int
         tournament_cards_won = player_data['tournamentCardsWon']#int
@@ -114,7 +115,7 @@ for clan_tag in clan_tags:
         donations_received = player_data['donationsReceived']#int
         cards = player_data['cards']#holds level and starLevel of each card
         deck = player_data['currentDeck']#holds card entities
-        current_favorite_card = player_data['currentFavoriteCard']['id']#int
+        current_favorite_card = player_data['currentFavouriteCard']['id']#int
         arena = player_data['arena']
         badges = player_data['badges']
         achievements = player_data['achievements']
@@ -137,13 +138,19 @@ for clan_tag in clan_tags:
         for card in cards:
             card_id = card['id']#int pour tout le reste dans cartes
             card_level = card['level']
-            card_star_level = card['starLevel']# can be null
-            
+            if 'starLevel' in card:
+                card_star_level = card['starLevel']
+            else:
+                card_star_level = None
+            #print(f'{card_id}, {card_star_level}')
             add_player_card = ("INSERT IGNORE INTO player_card"
                                "(player_tag, card_id, level, star_level)"
                                "VALUES (%s, %s, %s, %s)")
-            data_player_card = (player_tag, card_id, card_level, card_star_level)
-
+            # Assuming card_star_level is the variable you want to insert into star_level
+            if card_star_level is not None:
+                data_player_card = (player_tag, card_id, card_level, card_star_level)
+            else:
+                data_player_card = (player_tag, card_id, card_level, None)  # Setting star_level to NULL
             cursor.execute(add_player_card, data_player_card)
 
         #adding deck to player_deck
@@ -157,11 +164,22 @@ for clan_tag in clan_tags:
         
         #adding badges to badge and player_badge
         for badge in badges:
+
             badge_name = badge['name']
-            badge_level = badge['level']
-            badge_max_level = badge['maxLevel']
+            #print(f'{badge_name}')
+            if 'level' in badge:
+                badge_level = badge['level']
+            else:
+                badge_level = None
+            if 'maxLevel' in badge:
+                badge_max_level = badge['maxLevel']
+            else:
+                badge_max_level = None
             badge_progress = badge['progress']
-            badge_target = badge['target']
+            if 'target' in badge:
+                badge_target = badge['target']
+            else :
+                badge_target = None
 
 
             add_badge = ("INSERT IGNORE INTO badge"
@@ -183,7 +201,7 @@ for clan_tag in clan_tags:
 
 
             add_player_badge = ("INSERT IGNORE INTO player_badge"
-                                "(player_tag, badge_id, level, max_level, progress, target)"
+                                "(player_tag, badge_id, badge_level, max_level, progress, target)"
                                 "VALUES(%s, %s, %s, %s, %s, %s)")
             data_player_badge = (player_tag,  badge_id, badge_level, badge_max_level, badge_progress, badge_target)
 
@@ -196,7 +214,7 @@ for clan_tag in clan_tags:
             achievement_target = achievement['target']
 
             add_achievement = ("INSERT IGNORE INTO achievement"
-                               "name, info"
+                               "(name, info)"
                                "VALUES (%s, %s)")
             data_achievement = (achievement_name, achievement_info)
             cursor.execute(add_achievement, data_achievement)

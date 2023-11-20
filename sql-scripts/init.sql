@@ -88,7 +88,7 @@ CREATE TABLE player_card (
     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
     card_id INT,
     level INT,
-    starLevel INT,
+    star_level INT NULL,
     PRIMARY KEY (player_tag, card_id),
     FOREIGN KEY (player_tag) REFERENCES player(player_tag),
     FOREIGN KEY (card_id) REFERENCES card(card_id)
@@ -98,8 +98,8 @@ CREATE TABLE player_card (
 CREATE TABLE player_badge (
     player_tag VARCHAR(255),
     badge_id INT,
-    level INT,
-    maxLevel INT,
+    badge_level INT NULL,
+    maxLevel INT NULL,
     progress INT, -- represents the progress made towards a specific badge level
     target INT, -- represents the target value required to achieve a specific badge level
     PRIMARY KEY (player_tag, badge_id),
@@ -128,4 +128,24 @@ CREATE TABLE deck (
     FOREIGN KEY (card6) REFERENCES card(card_id),
     FOREIGN KEY (card7) REFERENCES card(card_id),
     FOREIGN KEY (card8) REFERENCES card(card_id)
+);
+
+-- Achievement table
+CREATE TABLE achievement (
+    achievement_id INT,
+    name VARCHAR(255),
+    info TEXT(65535),
+    PRIMARY KEY (achievement_id)
+);
+
+-- Player Achievement table
+CREATE TABLE player_achievement (
+    player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
+    achievement_id INT,
+    stars INT,
+    value INT,
+    target INT,
+    PRIMARY KEY (player_tag, achievement_id),
+    FOREIGN KEY (player_tag) REFERENCES player(player_tag),
+    FOREIGN KEY (achievement_id) REFERENCES achievement(achievement_id)
 );
