@@ -34,9 +34,9 @@ for card in data:
 
 
 # Define the API endpoint and parameters
-api_token = ''
+api_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjlmNTBiZGFjLTBlMDAtNDMwYy04MTM2LWU3ZmJkMjU1YmQ1MCIsImlhdCI6MTcwMDUyMDA3MSwic3ViIjoiZGV2ZWxvcGVyLzFkNDIwMDliLWU0NmQtODNmNi0wYmFmLWY3ZjJiYjE5OWUwYiIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIyNC4yMzEuMTAwLjg0Il0sInR5cGUiOiJjbGllbnQifV19.5gJwB13JnKAw8dEb--oL30DJUVpJd8y9Z84HNQ0FAJ1sfUPd1Ske5GvSxsskxQ0mrRyk_zeFmGjHdtt8EMAPoQ'
 api_url = 'https://api.clashroyale.com/v1/'
-clan_tags = ["LCUYQ0GP", "9CPV098R", "28RR9L0Y", "LUV2PUC2", "9GUCJRL0", "QR889RG0", "QVUJPU9Q", "QPY22Q0L", "QYU08YU9", "QYRY02LQ", "Q82P2JCJ", "8L9Y9UP0", "890C9RJV", "8902RQR", "82V9V", "GP9GRQ", "8LUR0C0Y", "8CRR000P", "QC9Y9V", "Q2YU2RCG", "80G9JYP", "GGU8QY", "LLCCRCL0", "8G2YPC", "QLJ9CJUL", "9J2U8GU", "Q0R08YLJ", "P88PGYP", "QYGL80RR", "LJCVV8P0", "2GR2GQRC", "PJ9PGCC9", "9VVPR2R8", "QUR0GLQC", "CP22UC", "G8YL9CLU", "Q8CRCR2P", "PQYR0C2C", "8Y08VVC", "Q82QU2L9", "QCG29C9C", "Q2CU82VC", "LJGG89QY", "GL008G8P", "L28V902R", "PQUC20", "8GQGUJ", "Q28QQG08", "G00G2R29", "889YVPYR", "9JJRCUUY", "YQPGYRLV", "LJP9VPJR", "GU8G9QQQ", "90UUC92Y", "U92J2C", "YLYJ8", "QY9V0QJ0", "8UJ2UUJ8", "LGQCCJU9", "89JQ02Q9", "P90C9YUJ", "9JCLGG9G", "PUVY2PUY", "QPGUGJQY", "QYRY02LQ"]
+clan_tags = ["LCUYQ0GP",] #"9CPV098R", "28RR9L0Y", "LUV2PUC2", "9GUCJRL0", "QR889RG0", "QVUJPU9Q", "QPY22Q0L", "QYU08YU9", "QYRY02LQ", "Q82P2JCJ", "8L9Y9UP0", "890C9RJV", "8902RQR", "82V9V", "GP9GRQ", "8LUR0C0Y", "8CRR000P", "QC9Y9V", "Q2YU2RCG", "80G9JYP", "GGU8QY", "LLCCRCL0", "8G2YPC", "QLJ9CJUL", "9J2U8GU", "Q0R08YLJ", "P88PGYP", "QYGL80RR", "LJCVV8P0", "2GR2GQRC", "PJ9PGCC9", "9VVPR2R8", "QUR0GLQC", "CP22UC", "G8YL9CLU", "Q8CRCR2P", "PQYR0C2C", "8Y08VVC", "Q82QU2L9", "QCG29C9C", "Q2CU82VC", "LJGG89QY", "GL008G8P", "L28V902R", "PQUC20", "8GQGUJ", "Q28QQG08", "G00G2R29", "889YVPYR", "9JJRCUUY", "YQPGYRLV", "LJP9VPJR", "GU8G9QQQ", "90UUC92Y", "U92J2C", "YLYJ8", "QY9V0QJ0", "8UJ2UUJ8", "LGQCCJU9", "89JQ02Q9", "P90C9YUJ", "9JCLGG9G", "PUVY2PUY", "QPGUGJQY", "QYRY02LQ"]
 headers={'Authorization': f'Bearer {api_token}'}
 
 
@@ -84,7 +84,6 @@ for clan_tag in clan_tags:
                 data_war = ("#"+clan_tag, i, standing['rank'])
                 break
 
-        
 
 
     #Extract the data for the members
@@ -204,9 +203,9 @@ for clan_tag in clan_tags:
                                 "(player_tag, badge_id, badge_level, max_level, progress, target)"
                                 "VALUES(%s, %s, %s, %s, %s, %s)")
             data_player_badge = (player_tag,  badge_id, badge_level, badge_max_level, badge_progress, badge_target)
+            cursor.execute(add_player_badge, data_player_badge)
 
-
-        for achievement in achievements: 
+        for achievement in achievements:
             achievement_name = achievement['name']
             achievement_info = achievement['info']
             achievement_stars = achievement['stars']
