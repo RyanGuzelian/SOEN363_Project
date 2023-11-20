@@ -5,7 +5,7 @@ USE db;
 -- Badge table
 CREATE TABLE badge (
     badge_id INT AUTO_INCREMENT,
-    badge_name VARCHAR(255),
+    badge_name VARCHAR(255) unique,
     PRIMARY KEY (badge_id)
 );
 
@@ -72,7 +72,7 @@ CREATE TABLE war (
 -- Achievement table
 CREATE TABLE achievement (
     achievement_id INT AUTO_INCREMENT,
-    achievement_name VARCHAR(255),
+    achievement_name VARCHAR(255) unique,
     info TEXT(65535),
     PRIMARY KEY (achievement_id)
 );
@@ -119,7 +119,7 @@ CREATE TABLE player_badge (
     player_tag VARCHAR(255), 
     badge_id INT AUTO_INCREMENT,
     badge_level INT NULL,
-    maxLevel INT NULL,
+    max_level INT NULL,
     progress INT, -- represents the progress made towards a specific badge level
     target INT, -- represents the target value required to achieve a specific badge level
     PRIMARY KEY (player_tag, badge_id),
