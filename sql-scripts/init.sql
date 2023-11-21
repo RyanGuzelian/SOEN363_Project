@@ -46,25 +46,23 @@ CREATE TABLE player (
 
 -- Clan table
 CREATE TABLE clan (
-    clan_tag VARCHAR(15) CHECK (clan_tag LIKE '#%'),
+    clan_tag VARCHAR(15),
     name VARCHAR(255),
-    type ENUM('open', 'closed'),
+    type VARCHAR(20),
     description TEXT(65535),
-    badge_id INT,
     clan_score INT,
     clan_war_trophies INT,
     location_id INT,
     required_trophies INT,
     donations_per_week INT,
-    PRIMARY KEY (clan_tag),
-    FOREIGN KEY (badge_id) REFERENCES badge(badge_id)
+    PRIMARY KEY (clan_tag)
 );
 
 -- War table
 CREATE TABLE war (
-    clan_tag VARCHAR(15) CHECK (clan_tag LIKE '#%'),
+    clan_tag VARCHAR(15),
     war_id INT,
-    standing VARCHAR(255), -- not sure
+    standing INT,
     PRIMARY KEY (clan_tag, war_id),
     FOREIGN KEY (clan_tag) REFERENCES clan(clan_tag)
 );
@@ -92,7 +90,7 @@ CREATE TABLE player_achievement (
 -- Clan Member table
 CREATE TABLE clan_member (
     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
-    clan_tag VARCHAR(15) CHECK (clan_tag LIKE '#%'),
+    clan_tag VARCHAR(15),
     role ENUM('member', 'elder', 'leader', 'coLeader'),
     last_seen DATETIME,
     donations INT, -- represents the number of donations made
