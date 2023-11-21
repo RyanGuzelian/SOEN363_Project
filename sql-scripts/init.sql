@@ -92,7 +92,7 @@ CREATE TABLE clan_member (
     player_tag VARCHAR(15) CHECK (player_tag LIKE '#%'),
     clan_tag VARCHAR(15),
     role ENUM('member', 'elder', 'leader', 'coLeader'),
-    last_seen DATETIME,
+    last_seen DATETIME NULL,
     donations INT, -- represents the number of donations made
     donations_received INT,
     PRIMARY KEY (player_tag, clan_tag),
