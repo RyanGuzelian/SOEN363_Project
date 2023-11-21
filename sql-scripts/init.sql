@@ -9,6 +9,14 @@ CREATE TABLE badge (
     PRIMARY KEY (badge_id)
 );
 
+CREATE TABLE location (
+    location_id INT PRIMARY KEY,
+    location_name VARCHAR(255) NOT NULL,
+    location_code VARCHAR(10) NULL,
+    isCountry BOOLEAN NOT NULL
+);
+
+
 -- Card table
 CREATE TABLE card (
     card_id INT,

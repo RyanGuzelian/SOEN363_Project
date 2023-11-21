@@ -9,33 +9,42 @@ cnx = mysql.connector.connect(user='root', password='admin',
                               host='localhost', port=3307, database='db')
 cursor = cnx.cursor(buffered=True)
 
-api2_url = 'https://royaleapi.github.io/cr-api-data/json/cards.json'
 
-response = requests.get(api2_url)
-data = json.loads(response.text)
-
-for card in data:
-    card_id = card['id']
-    key = card['key']
-    name = card['name']
-    elixir = card['elixir']
-    card_type = card['type']
-    rarity = card['rarity']
-    arena = card['arena']
-    description = card['description']
-
-    add_card = ("INSERT IGNORE INTO card"
-                "(card_id, card_key, name, elixir, type, rarity, arena, description)"
-                "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)")
-    data_card = (card_id, key, name, elixir, card_type, rarity, arena, description)
-
-    cursor.execute(add_card, data_card)
+# api2_url = 'https://royaleapi.github.io/cr-api-data/json/cards.json'
+#
+# response = requests.get(api2_url)
+# data = json.loads(response.text)
+#
+# for card in data:
+#     card_id = card['id']
+#     key = card['key']
+#     name = card['name']
+#     elixir = card['elixir']
+#     card_type = card['type']
+#     rarity = card['rarity']
+#     arena = card['arena']
+#     description = card['description']
+#
+#     add_card = ("INSERT IGNORE INTO card"
+#                 "(card_id, card_key, name, elixir, type, rarity, arena, description)"
+#                 "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)")
+#     data_card = (card_id, key, name, elixir, card_type, rarity, arena, description)
+#
+#     cursor.execute(add_card, data_card)
 
 # Define the API endpoint and parameters
-api_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjMzMjJiZjQwLWZiYjYtNGFjOS1iYzI1LTM3NWQ2MjU5NjVhOCIsImlhdCI6MTcwMDQyNTA4NCwic3ViIjoiZGV2ZWxvcGVyLzU5NmQ3MWE1LWEwOTItZmJjNy03Njc1LThiYjUxN2Q4MTZmMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI0NS41OC4xMDAuMjE0Il0sInR5cGUiOiJjbGllbnQifV19.0L2oSwax4ewkqusycn30_xbcnBL4CiR5GAuB3gO6EbRWeWszoBUd1e-L5PRbpE-WbOZgLuOGLtmDAqnN3wM7vQ'
+api_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImQ2NDcyZDk4LWEwMWEtNDliMi05ZGY0LWQxZjQxYjU0OWZlOSIsImlhdCI6MTcwMDU4MzMwMCwic3ViIjoiZGV2ZWxvcGVyLzU5NmQ3MWE1LWEwOTItZmJjNy03Njc1LThiYjUxN2Q4MTZmMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMzIuMjA1LjIyOS4yMCJdLCJ0eXBlIjoiY2xpZW50In1dfQ.h68R8UIHq3HDYKoweIoBbB5Iz2TwHTYefjwwl_BUyBOFOM3whzrFdcXTOEPJw4Vn0qmdViF6eijsa_WMjzgcgw'
 api_url = 'https://api.clashroyale.com/v1/'
-clan_tags = ["LCUYQ0GP", "9CPV098R", "28RR9L0Y", "LUV2PUC2", "9GUCJRL0", "QR889RG0", "QVUJPU9Q", "QPY22Q0L", "QYU08YU9", "QYRY02LQ", "Q82P2JCJ", "8L9Y9UP0", "890C9RJV", "8902RQR", "82V9V", "GP9GRQ", "8LUR0C0Y", "8CRR000P", "QC9Y9V", "Q2YU2RCG", "80G9JYP", "GGU8QY", "LLCCRCL0", "8G2YPC", "QLJ9CJUL", "9J2U8GU", "Q0R08YLJ", "P88PGYP", "QYGL80RR", "LJCVV8P0", "2GR2GQRC", "PJ9PGCC9", "9VVPR2R8", "QUR0GLQC", "CP22UC", "G8YL9CLU", "Q8CRCR2P", "PQYR0C2C", "8Y08VVC", "Q82QU2L9", "QCG29C9C", "Q2CU82VC", "LJGG89QY", "GL008G8P", "L28V902R", "PQUC20", "8GQGUJ", "Q28QQG08", "G00G2R29", "889YVPYR", "9JJRCUUY", "YQPGYRLV", "LJP9VPJR", "GU8G9QQQ", "90UUC92Y", "U92J2C", "YLYJ8", "QY9V0QJ0", "8UJ2UUJ8", "LGQCCJU9", "89JQ02Q9", "P90C9YUJ", "9JCLGG9G", "PUVY2PUY", "QPGUGJQY", "QYRY02LQ"]
+clan_tags = []
 headers = {'Authorization': f'Bearer {api_token}'}
+
+#Add clans to clan_tags
+tag_url = api_url + "clans?name=mexico&limit=1000"#done the, aaa, russia, pol, mexico
+tag_response = requests.get(tag_url, headers)
+tag_data = json.loads(tag_response.text)
+whole_clan_data = tag_data['items']
+for clan_data in whole_clan_data:
+    clan_tags.append(clan_data['tag'][1:])
 
 # Loop through the clan tags
 for clan_tag in clan_tags:
@@ -71,6 +80,20 @@ for clan_tag in clan_tags:
         required_trophies,
         donations_per_week)
     cursor.execute(add_clan, data_clan)
+
+    location_id = location['id']
+    location_name = location['name']
+    location_is_country = location['isCountry']
+    if 'countryCode' in location:
+        location_code = location['countryCode']
+    else :
+        location_code = None
+
+    add_location = ("INSERT IGNORE INTO location"
+                    "(location_id, location_name, location_code, isCountry)"
+                    "VALUES(%s, %s, %s, %s)")
+    data_location = (location_id, location_name, location_code, location_is_country)
+    cursor.execute(add_location, data_location)
 
     # add war data to war table
 
@@ -138,6 +161,8 @@ for clan_tag in clan_tags:
         data_clan_member = (new_clan_tag, player_tag, role, last_seen, donations, donations_received)
         cursor.execute(add_clan_member, data_clan_member)
 
+
+
         # Adding player cards to player_card
         for card in cards:
             card_id = card['id']  # int pour tout le reste dans cartes
@@ -188,11 +213,11 @@ for clan_tag in clan_tags:
             else:
                 badge_target = None
 
-            add_badge = ("INSERT IGNORE INTO badge"
-                         "(badge_name)"
-                         "VALUES(%s)")
+            # add_badge = ("INSERT IGNORE INTO badge"
+            #              "(badge_name)"
+            #              "VALUES(%s)")
             data_badge = (badge_name)
-            cursor.execute(add_badge, (data_badge,))
+            # cursor.execute(add_badge, (data_badge,))
 
             # Retrieve the badge_id (whether inserted or already exists)
             get_badge_id = "SELECT badge_id FROM badge WHERE badge_name = %s"
@@ -218,11 +243,11 @@ for clan_tag in clan_tags:
             achievement_value = achievement['value']
             achievement_target = achievement['target']
 
-            add_achievement = ("INSERT IGNORE INTO achievement"
-                               "(achievement_name, info)"
-                               "VALUES (%s, %s)")
-            data_achievement = (achievement_name, achievement_info)
-            cursor.execute(add_achievement, data_achievement)
+            # add_achievement = ("INSERT IGNORE INTO achievement"
+            #                    "(achievement_name, info)"
+            #                    "VALUES (%s, %s)")
+            # data_achievement = (achievement_name, achievement_info)
+            # cursor.execute(add_achievement, data_achievement)
 
             # Retrieve the badge_id (whether inserted or already exists)
             get_achievement_id = "SELECT achievement_id FROM achievement WHERE achievement_name = %s"
@@ -242,9 +267,9 @@ for clan_tag in clan_tags:
             data_player_achievement = (
                 player_tag, achievement_id, achievement_stars, achievement_value, achievement_target)
             cursor.execute(add_player_achievement, data_player_achievement)
-
+    cnx.commit()
 # Commit the changes and close the connection
-cnx.commit()
+
 cursor.close()
 cnx.close()
 end = time.time()
