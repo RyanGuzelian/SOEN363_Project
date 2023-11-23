@@ -19,6 +19,12 @@ SELECT P.trophies, CM.clan_tag
 FROM db.player AS P, db.clan_member AS CM
 WHERE P.player_tag = CM.player_tag;
 
+-- Join query using ON
+SELECT P.trophies, CM.clan_tag
+FROM db.player AS P
+JOIN db.clan_member AS CM ON P.player_tag = CM.player_tag;
+
+
 -- Join queries using on (inner, outter left, outter right, full join)
 SELECT *
 FROM clan c
@@ -43,11 +49,17 @@ SELECT *
 FROM clan c
 RIGHT JOIN war w ON c.clan_tag = w.clan_tag;
 
--- Corrilated query
+-- Correlated query
 SELECT p.player_tag, p.challenge_max_wins
   FROM db.player p
   WHERE p.challenge_max_wins > (
         SELECT AVG(challenge_max_wins)
+        FROM db.player);
+
+ SELECT p.player_tag, p.tournament_battle_count
+  FROM db.player p
+  WHERE p.tournament_battle_count > (
+        SELECT AVG(tournament_battle_count)
         FROM db.player);
 
 -- Set Operations (intersect vs equicalences without set operations)
@@ -66,7 +78,7 @@ WHERE EXISTS ( SELECT *
     AND pa.achievement_id = 125
 );
 
--- Set Operations (union vs equicalences without set operations)
+-- Set Operations (union vs equivalences without set operations)
 SELECT p.player_tag, p.three_crown_wins
 FROM db.player p
 UNION 
@@ -105,7 +117,10 @@ WHERE NOT EXISTS ( SELECT *
 );
 
 -- View with hard-coded criteria
-
+CREATE VIEW high_exp_players AS
+SELECT *
+from db.player p
+WHERE p.total_exp_points > 1000000
 
 -- Division (regular nested query)
 SELECT player_tag, name from player p
