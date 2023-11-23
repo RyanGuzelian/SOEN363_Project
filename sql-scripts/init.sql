@@ -148,6 +148,13 @@ CREATE TABLE deck (
     FOREIGN KEY (card8) REFERENCES card(card_id)
 );
 
+-- Log trigger
+CREATE TRIGGER db.player_update
+AFTER UPDATE ON db.player FOR EACH ROW
+    INSERT INTO manual_update_log (update_info)
+    VALUES (CONCAT('Updated player record (', OLD.player_tag, ')'));
+
+
 -- -- Achievement table
 -- CREATE TABLE achievement (
 --     achievement_id INT,
